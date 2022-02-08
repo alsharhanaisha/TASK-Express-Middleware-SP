@@ -1,17 +1,25 @@
-const express = require('express');
+const express = require("express");
 
 const {
   getProducts,
   productCreate,
   productDelete,
   productUpdate,
-} = require('./controllers');
+  productFetch,
+} = require("./controllers");
 
 const router = express.Router();
 
-router.get('/', getProducts);
-router.post('/', productCreate);
-router.delete('/:productId', productDelete);
-router.put('/:productId', productUpdate);
+// Middleware:
+router.param("productId", async (req, res, next, prodId) => {
+  const product = await productFetch(prodId, next);
+  req.product = product;
+  next();
+});
+
+router.get("/", getProducts);
+router.post("/", productCreate);
+router.delete("/:productId", productDelete);
+router.put("/:productId", productUpdate);
 
 module.exports = router;

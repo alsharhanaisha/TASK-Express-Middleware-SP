@@ -1,50 +1,62 @@
-const Product = require('../../models/Product');
+const Product = require("../../models/Product");
 
-exports.getProducts = async (req, res) => {
+// how would an error occur in fetching?
+exports.getProducts = async (req, res, next) => {
   try {
     const products = await Product.find();
     return res.json(products);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    // return res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.productCreate = async (req, res) => {
+exports.productFetch = async (productId, next) => {
+  try {
+    const product = await Product.findById(productId);
+    if (product) return product;
+    else {
+      const err = new Error("Product Not Found");
+      err.status = 404;
+      next(err);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.productCreate = async (req, res, next) => {
   try {
     const newProduct = await Product.create(req.body);
     return res.status(201).json(newProduct);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-exports.productDelete = async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const foundProduct = await Product.findById(productId);
-    if (foundProduct) {
-      foundProduct.remove();
-      return res.status(204).end();
-    } else {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
+    // return res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-exports.productUpdate = async (req, res) => {
+exports.productDelete = async (req, res, next) => {
   try {
-    const { productId } = req.params;
-    let foundProduct = await Product.findById(productId);
-    if (foundProduct) {
-      foundProduct = await Product.findByIdAndUpdate(productId, req.body, {
-        new: true,
-      });
-      return res.json(foundProduct);
-    } else {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    const productId = req.product._id;
+    await Product.findByIdAndRemove({ _id: productId });
+    res.status(204).end();
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    // return res.status(500).json({ message: error.message });
+    next(error);
+  }
+};
+
+exports.productUpdate = async (req, res, next) => {
+  try {
+    const productId = req.cookie._id;
+    const updatedProduct = await Product.findByIdAndUpdate(
+      { _id: productId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    next(error);
   }
 };
