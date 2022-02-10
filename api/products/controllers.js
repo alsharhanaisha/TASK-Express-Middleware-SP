@@ -27,6 +27,10 @@ exports.productFetch = async (productId, next) => {
 
 exports.productCreate = async (req, res, next) => {
   try {
+    console.log(req.file);
+    if (req.file) {
+      req.body.image = `${req.protocol}://${req.get("host")}/${req.file.path}}`;
+    }
     const newProduct = await Product.create(req.body);
     return res.status(201).json(newProduct);
   } catch (error) {
@@ -48,7 +52,12 @@ exports.productDelete = async (req, res, next) => {
 
 exports.productUpdate = async (req, res, next) => {
   try {
-    const productId = req.cookie._id;
+    console.log(req.file);
+    console.log(req.body);
+    if (req.file) {
+      req.body.image = `${req.protocol}://${req.get("host")}/${req.file.path}}`;
+    }
+    const productId = req.product._id;
     const updatedProduct = await Product.findByIdAndUpdate(
       { _id: productId },
       req.body,

@@ -10,6 +10,8 @@ const {
 
 const router = express.Router();
 
+const upload = require("../../middleware/multer");
+
 // Middleware:
 router.param("productId", async (req, res, next, prodId) => {
   const product = await productFetch(prodId, next);
@@ -18,8 +20,8 @@ router.param("productId", async (req, res, next, prodId) => {
 });
 
 router.get("/", getProducts);
-router.post("/", productCreate);
+router.post("/", upload.single("image"), productCreate);
 router.delete("/:productId", productDelete);
-router.put("/:productId", productUpdate);
+router.put("/:productId", upload.single("image"), productUpdate);
 
 module.exports = router;
